@@ -7,8 +7,9 @@ COPY controllers/ ./controllers/
 COPY models/ ./models/
 COPY routes/ ./routes/
 
-RUN addgroup --system nonroot && adduser --system --group nonroot
-RUN chown -R nonroot:nonroot /app
+RUN addgroup --system nonroot \
+    && adduser --system --group nonroot \
+    && chown -R nonroot:nonroot /app
 USER nonroot
 
 ENV GOPATH=/tmp/go
