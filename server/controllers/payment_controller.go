@@ -9,27 +9,35 @@ import (
 	"unicode"
 )
 
-func validatePayment(paymentData models.Transaction) error {
-	if paymentData.Customer.Name == "" || paymentData.Customer.Surname == "" {
+func validateCustomer(customer models.Customer) error {
+	if customer.Name == "" || customer.Surname == "" {
 		return echo.NewHTTPError(http.StatusBadRequest, "Customer name and surname are required")
 	}
 
-	if paymentData.Customer.Email == "" {
+	if customer.Email == "" {
 		return echo.NewHTTPError(http.StatusBadRequest, "Customer email is required")
 	}
 
-	if paymentData.Customer.CardNumber == "" {
+	if customer.CardNumber == "" {
 		return echo.NewHTTPError(http.StatusBadRequest, "Card number is required")
 	}
 
-	if len(paymentData.Customer.CardNumber) != 16 {
+	if len(customer.CardNumber) != 16 {
 		return echo.NewHTTPError(http.StatusBadRequest, "Card number must be 16 digits long")
 	}
 
-	for _, char := range paymentData.Customer.CardNumber {
+	for _, char := range customer.CardNumber {
 		if !unicode.IsDigit(char) {
 			return echo.NewHTTPError(http.StatusBadRequest, "Card number must contain only digits")
 		}
+	}
+
+	return nil
+}
+
+func validatePayment(paymentData models.Transaction) error {
+	if err := validateCustomer(paymentData.Customer); err != nil {
+		return err
 	}
 
 	if paymentData.Total <= 0 {

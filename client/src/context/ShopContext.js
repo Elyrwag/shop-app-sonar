@@ -1,4 +1,5 @@
-import React, {createContext, useState, useContext, useEffect} from 'react';
+import React, { createContext, useState, useContext, useMemo, useCallback } from 'react';
+import PropTypes from 'prop-types';
 
 const ShopContext = createContext();
 
@@ -7,7 +8,7 @@ export const useShop = () => useContext(ShopContext); // custom hook useShop
 export const ShopProvider = ({ children }) => {
     const [cart, setCart] = useState([]);
 
-    const addToCart = (product) => {
+    const addToCart = useCallback((product) => {
         setCart(prev => {
             const existing = prev.find(item => item.product.id === product.id);
             if (existing) {
@@ -19,9 +20,9 @@ export const ShopProvider = ({ children }) => {
                 return [...prev, { product, quantity: 1 }];
             }
         });
-    };
+    }, []);
 
-    const removeFromCart = (productId) => {
+    const removeFromCart = useCallback((productId) => {
         setCart(prev => {
             return prev
                 .map(item => item.product.id === productId
@@ -30,16 +31,27 @@ export const ShopProvider = ({ children }) => {
                 )
                 .filter(item => item.quantity > 0);
         });
-    };
+    }, []);
 
-    const clearCart = () => {
+    const clearCart = useCallback(() => {
         setCart([]);
-    };
+    }, []);
+
+    const value = useMemo(() => ({
+        cart,
+        addToCart,
+        removeFromCart,
+        clearCart
+    }), [cart, addToCart, removeFromCart, clearCart]);
 
     return (
-        <ShopContext.Provider value={{ cart, addToCart, removeFromCart, clearCart }}>
+        <ShopContext.Provider value={value}>
             {children}
         </ShopContext.Provider>
     );
 
+};
+
+ShopProvider.propTypes = {
+    children: PropTypes.node.isRequired,
 };
